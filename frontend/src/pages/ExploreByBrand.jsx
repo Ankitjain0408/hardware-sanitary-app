@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/httpClient";
 import { FaArrowLeft, FaBox, FaDownload } from "react-icons/fa";
 import { GridSkeleton } from "../components/Skeletons";
 

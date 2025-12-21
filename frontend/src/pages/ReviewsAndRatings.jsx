@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaStar } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 function ReviewsAndRatings({ user }) {
   const [loading, setLoading] = useState(true);
@@ -50,8 +51,7 @@ function ReviewsAndRatings({ user }) {
     try {
       setError("");
       setLoading(true);
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/reviews?limit=30`, { credentials: "include" });
+      const res = await apiFetch("/api/reviews?limit=30", {});
       if (!res.ok) throw new Error("Failed to load reviews");
       const data = await res.json();
       setReviews(data.reviews || []);
@@ -80,11 +80,9 @@ function ReviewsAndRatings({ user }) {
 
     try {
       setSaving(true);
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/reviews`, {
+      const res = await apiFetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ message: trimmed, rating: rating || null }),
       });
       const data = await res.json().catch(() => ({}));

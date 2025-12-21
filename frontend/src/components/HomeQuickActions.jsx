@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/httpClient";
 import { FaTags, FaCheckCircle, FaRupeeSign, FaHeadset } from "react-icons/fa";
 import TrustedBrands from "./TrustedBrands";
 

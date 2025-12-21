@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/httpClient";
 
 function AppFooter({ onContactUsClick, onServiceSupportClick }) {
   const [mainCategories, setMainCategories] = useState([]);
