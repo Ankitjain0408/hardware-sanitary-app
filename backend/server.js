@@ -216,8 +216,14 @@ const otpLimiter = rateLimit({
 
 // ---------------- SIGNUP (with OTP verification) ----------------
 app.post("/api/auth/signup/send-otp", (req, res, next) => {
-  console.log("🎯 POST /api/auth/signup/send-otp route hit");
+  console.log("🎯🎯🎯 POST /api/auth/signup/send-otp route hit 🎯🎯🎯");
   console.log("📥 Request body keys:", Object.keys(req.body || {}));
+  console.log("📥 Request body:", { 
+    username: req.body?.username, 
+    email: req.body?.email, 
+    hasPassword: !!req.body?.password 
+  });
+  console.log("📥 Request IP:", req.ip);
   next();
 }, otpLimiter, signupSendOTP);
 app.post("/api/auth/signup/verify-otp", authLimiter, signupVerifyOTP);
