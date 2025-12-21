@@ -263,12 +263,16 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
       }
 
       const data = await res.json();
-      if (data.msg) {
-        setMsg(data.msg);
+      console.log("Signup OTP response:", data);
+      
+      // Always show OTP verification if we get a successful response
+      if (res.ok) {
+        setMsg(data.msg || "Verification OTP has been sent to your email address. Please check your inbox.");
         setSignupEmail(data.email || form.email.trim().toLowerCase());
-        setTimeout(() => {
-          setShowOTPVerification(true);
-        }, 1500);
+        // Show OTP verification immediately
+        setShowOTPVerification(true);
+      } else {
+        setMsg(data.msg || "Unable to send verification code. Please try again.");
       }
     } catch (error) {
       console.error("Signup error:", error);
