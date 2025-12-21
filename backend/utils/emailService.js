@@ -25,6 +25,9 @@ const createTransporter = () => {
       // Do not fail on invalid certs
       rejectUnauthorized: false
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
     debug: true, // Enable debug logging
     logger: true // Enable logging
   });
