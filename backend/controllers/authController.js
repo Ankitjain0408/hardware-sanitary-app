@@ -391,13 +391,17 @@ export const signupVerifyOTP = async (req, res) => {
     // Check if OTP is expired (strict 10-minute check)
     const now = new Date();
     const expiresAt = new Date(sessionData.otpExpiresAt);
+    console.log(`⏰ OTP expires at: ${expiresAt.toISOString()}, Current time: ${now.toISOString()}`);
     
     if (expiresAt <= now) {
+      console.log("❌ OTP expired");
       return res.status(400).json({ 
         msg: "This OTP has expired. Please request a new one.",
         expired: true 
       });
     }
+    
+    console.log("✅ OTP not expired");
 
     // Get signup data from session (remove OTP from data)
     const { username, password } = sessionData;
