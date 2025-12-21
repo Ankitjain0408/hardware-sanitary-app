@@ -73,14 +73,14 @@ app.use(
 
       // Prod: allow configured frontend domain(s) or all if not set
       if (IS_PROD) {
-        if (FRONTEND_URL) {
+        if (FRONTEND_URL && FRONTEND_URL.trim()) {
           // Support comma-separated multiple origins
           const allowedOrigins = FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, '')); // Remove trailing slashes
           const originNormalized = origin.replace(/\/$/, ''); // Remove trailing slash from request origin
           
           // Check exact match or normalized match
           if (allowedOrigins.includes(origin) || allowedOrigins.includes(originNormalized)) {
-            console.log(`CORS: Origin ${origin} allowed`);
+            console.log(`CORS: Origin ${origin} allowed (matched ${FRONTEND_URL})`);
             return callback(null, true);
           }
           
@@ -90,7 +90,7 @@ app.use(
         } else {
           // If FRONTEND_URL not set, allow all origins (for initial deployment)
           // Set FRONTEND_URL in environment variables for better security
-          console.log('CORS: FRONTEND_URL not set, allowing all origins');
+          console.log(`CORS: FRONTEND_URL not set or empty, allowing all origins. Origin: ${origin}`);
           return callback(null, true);
         }
       }
