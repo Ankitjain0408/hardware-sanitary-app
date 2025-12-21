@@ -11,10 +11,12 @@ export const requireAuth = async (req, res, next) => {
       isAdmin: false,
       isGuest: true
     };
+    console.log("Auth: Guest user allowed");
     return next();
   }
 
   if (!req.session.userId) {
+    console.log("Auth: No userId or guest session, returning 401");
     return res.status(401).json({ msg: "Not authenticated" });
   }
   

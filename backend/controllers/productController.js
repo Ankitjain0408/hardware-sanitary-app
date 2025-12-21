@@ -191,6 +191,7 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`Get product by id: ${id}, user: ${req.user?._id || 'none'}, isGuest: ${req.session?.isGuest || false}`);
 
     const product = await Product.findById(id)
       .populate("brandId", "name imageUrl")
@@ -199,6 +200,7 @@ export const getProductById = async (req, res) => {
       .lean();
 
     if (!product) {
+      console.log(`Product not found: ${id}`);
       return res.status(404).json({ msg: "Product not found" });
     }
 
@@ -209,6 +211,7 @@ export const getProductById = async (req, res) => {
     const primaryImageUrl =
       images.find((i) => i.isPrimary)?.imageUrl || images[0]?.imageUrl || null;
 
+    console.log(`Product found: ${product.name}, images: ${images.length}`);
     res.json({
       product: {
         ...product,
