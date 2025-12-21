@@ -66,6 +66,16 @@ app.use("/api/auth", (req, res, next) => {
   next();
 });
 
+// Log ALL incoming requests (for debugging) - especially signup
+app.use((req, res, next) => {
+  if (req.path.includes("signup") || req.path.includes("send-otp")) {
+    console.log(`🔍 INCOMING REQUEST: ${req.method} ${req.path}`);
+    console.log(`🔍 Query:`, req.query);
+    console.log(`🔍 Body keys:`, Object.keys(req.body || {}));
+  }
+  next();
+});
+
 // Log all incoming requests (for debugging)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/products')) {
