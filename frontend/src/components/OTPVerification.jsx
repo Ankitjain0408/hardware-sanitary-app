@@ -142,35 +142,57 @@ const OTPVerification = ({ email, onBack, onOTPVerified, verifyEndpoint = "/api/
     try {
       if (onResendOTP) {
         // Use custom resend handler (for signup flow)
-        await onResendOTP();
-        setMsg("New OTP has been sent to your email address.");
-        // Reset timers: OTP expiry (10 min) and resend cooldown (1 min)
-        setOtpExpiryTime(600);
-        setResendCooldown(60);
-        setCanResend(false);
+        try {
+          await onResendOTP();
+          setMsg("New OTP has been sent to your email address.");
+          // Reset timers: OTP expiry (10 min) and resend cooldown (1 min)
+          setOtpExpiryTime(600);
+          setResendCooldown(60);
+          setCanResend(false);
+        } catch (error) {
+          // Handle errors from custom resend handler (including 429 rate limit)
+          setMsg(error.message || "Failed to resend OTP. Please try again.");
+          // Don't reset cooldown if rate limited
+          if (!error.message?.includes("wait") && !error.message?.includes("minute")) {
+            setResendCooldown(60);
+            setCanResend(false);
+          }
+        }
       } else {
         // Default resend for password reset
         const resendEndpoint = verifyEndpoint.includes("signup") 
           ? "/api/auth/signup/resend-otp"
           : "/api/auth/resend-otp";
         
-        const res = await fetch(resendEndpoint, {
+        const res = await apiFetch(resendEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ email }),
         });
 
-        const data = await res.json();
-
-        if (res.ok) {
+        if (!res.ok) {
+          try {
+            const errorData = await res.json();
+            // Handle rate limiting (429) with specific message
+            if (res.status === 429) {
+              setMsg(errorData.message || errorData.msg || "Too many requests. Please wait 1 minute before requesting a new OTP.");
+            } else {
+              setMsg(errorData.msg || "Failed to resend OTP. Please try again.");
+            }
+          } catch (parseError) {
+            if (res.status === 429) {
+              setMsg("Too many requests. Please wait 1 minute before requesting a new OTP.");
+            } else {
+              setMsg("Failed to resend OTP. Please try again.");
+            }
+          }
+        } else {
+          const data = await res.json();
           setMsg(data.msg || "New OTP has been sent to your email address.");
           // Reset timers: OTP expiry (10 min) and resend cooldown (1 min)
           setOtpExpiryTime(600);
           setResendCooldown(60);
           setCanResend(false);
-        } else {
-          setMsg(data.msg || "Failed to resend OTP. Please try again.");
         }
       }
     } catch (error) {
