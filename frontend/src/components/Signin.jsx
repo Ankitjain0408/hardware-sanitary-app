@@ -237,11 +237,16 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
         password: form.password // Don't trim password
       };
 
+      console.log("📤 Sending signup OTP request to backend:", { 
+        email: dataToSend.email, 
+        username: dataToSend.username 
+      });
       const res = await apiFetch("/api/auth/signup/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),
       });
+      console.log("📥 Signup OTP response status:", res.status, res.ok);
 
       if (!res.ok) {
         try {
