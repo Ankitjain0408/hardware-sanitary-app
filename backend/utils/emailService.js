@@ -162,11 +162,27 @@ This is an automated email. Please do not reply to this message.
       `,
     };
 
-    // Verify connection before sending
-    await transporter.verify();
-    console.log(`✅ SMTP connection verified for ${email}`);
+    // Verify connection before sending (with timeout)
+    try {
+      await Promise.race([
+        transporter.verify(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("SMTP verification timeout")), 8000)
+        )
+      ]);
+      console.log(`✅ SMTP connection verified for ${email}`);
+    } catch (verifyError) {
+      console.error(`⚠️ SMTP verification failed, but continuing:`, verifyError.message);
+      // Continue anyway - sometimes verify fails but send works
+    }
     
-    const info = await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const info = await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Email send timeout")), 15000)
+      )
+    ]);
     console.log(`✅ Signup OTP email sent successfully to ${email}`);
     console.log(`📧 Message ID: ${info.messageId}`);
     console.log(`📧 Response: ${info.response}`);
