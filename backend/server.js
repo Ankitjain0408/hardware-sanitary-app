@@ -50,6 +50,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "";
 
 app.use(express.json());
 
+// Log all POST requests to auth endpoints for debugging
+app.use("/api/auth", (req, res, next) => {
+  if (req.method === "POST") {
+    console.log(`🔵 POST ${req.path} - Body keys:`, Object.keys(req.body || {}));
+  }
+  next();
+});
+
 // Log all incoming requests (for debugging)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/products')) {
@@ -199,9 +207,16 @@ const otpLimiter = rateLimit({
 });
 
 // ---------------- SIGNUP (with OTP verification) ----------------
-app.post("/api/auth/signup/send-otp", otpLimiter, signupSendOTP);
+app.post("/api/auth/signup/send-otp", (req, res, next) => {
+  console.log("🎯 POST /api/auth/signup/send-otp route hit");
+  console.log("📥 Request body keys:", Object.keys(req.body || {}));
+  next();
+}, otpLimiter, signupSendOTP);
 app.post("/api/auth/signup/verify-otp", authLimiter, signupVerifyOTP);
-app.post("/api/auth/signup/resend-otp", otpLimiter, signupSendOTP); // Resend OTP endpoint
+app.post("/api/auth/signup/resend-otp", (req, res, next) => {
+  console.log("🎯 POST /api/auth/signup/resend-otp route hit");
+  next();
+}, otpLimiter, signupSendOTP); // Resend OTP endpoint
 
 // Legacy signup endpoint (kept for backward compatibility, but will be deprecated)
 app.post("/api/auth/signup", async (req, res) => {
