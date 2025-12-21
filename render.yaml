@@ -8,8 +8,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
+      # PORT is automatically set by Render, no need to specify
       # Add your environment variables here:
       # - key: MONGO_URL
       #   sync: false
