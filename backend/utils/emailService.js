@@ -101,12 +101,14 @@ This is an automated email. Please do not reply to this message.
 
 // Send Signup OTP email
 export const sendSignupOTPEmail = async (email, otp) => {
+  console.log(`📧 sendSignupOTPEmail called for ${email} with OTP: ${otp}`);
   try {
     // Check if email credentials are configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error("Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS in .env file");
+      console.error("❌ Email credentials not configured. EMAIL_USER:", !!process.env.EMAIL_USER, "EMAIL_PASS:", !!process.env.EMAIL_PASS);
       throw new Error("Email service not configured");
     }
+    console.log(`✅ Email credentials found. Using: ${process.env.EMAIL_USER}`);
 
     const transporter = createTransporter();
 

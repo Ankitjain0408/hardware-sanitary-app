@@ -211,8 +211,11 @@ export const resetPassword = async (req, res) => {
 
 // Signup - Send OTP
 export const signupSendOTP = async (req, res) => {
+  console.log("🚀 signupSendOTP called");
+  console.log("📥 Request body:", { username: req.body?.username, email: req.body?.email, password: req.body?.password ? "***SET***" : "NOT SET" });
   try {
     const { username, email, password } = req.body;
+    console.log("✅ Request body parsed successfully");
 
     // Validation
     if (!username || !email || !password) {
@@ -299,9 +302,11 @@ export const signupSendOTP = async (req, res) => {
 
     // Generate OTP
     const otpCode = generateOTP();
+    console.log(`🔐 Generated OTP for ${trimmedEmail}: ${otpCode}`);
 
     // Calculate expiration time (exactly 10 minutes from now)
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    console.log(`⏰ OTP expires at: ${otpExpiresAt.toISOString()}`);
 
     // Store signup data and OTP in session (not in database)
     req.session.signupData = {
@@ -311,6 +316,7 @@ export const signupSendOTP = async (req, res) => {
       otp: otpCode,
       otpExpiresAt: otpExpiresAt // Exactly 10 minutes from now
     };
+    console.log(`💾 Stored signup data in session for ${trimmedEmail}`);
 
     // Send OTP via email
     try {
