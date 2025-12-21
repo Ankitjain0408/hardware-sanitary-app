@@ -82,21 +82,33 @@ function App() {
   }, []);
 
   const refreshWishlistCount = async () => {
+    // Only fetch wishlist if user is authenticated (including guests)
+    if (!isAuthenticated) return;
+    
     try {
       const res = await apiFetch("/api/wishlist", {});
-      if (!res.ok) return;
+      if (!res.ok) {
+        // Handle 401 gracefully (user not authenticated yet)
+        if (res.status === 401) {
+          setWishlistCount(0);
+        }
+        return;
+      }
       const data = await res.json();
       const items = data.wishlist || [];
       const count = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
       setWishlistCount(count);
     } catch {
-      // ignore
+      // ignore errors silently
     }
   };
 
   // Keep wishlist count in sync (add/remove/update)
+  // Only fetch when authenticated
   useEffect(() => {
-    refreshWishlistCount();
+    if (isAuthenticated) {
+      refreshWishlistCount();
+    }
     const onRefresh = () => refreshWishlistCount();
     window.addEventListener("wishlist:refresh", onRefresh);
     window.addEventListener("wishlist:changed", onRefresh);
@@ -104,7 +116,7 @@ function App() {
       window.removeEventListener("wishlist:refresh", onRefresh);
       window.removeEventListener("wishlist:changed", onRefresh);
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // Global toast notifications (e.g., wishlist added)
   useEffect(() => {
@@ -148,7 +160,10 @@ function App() {
   };
 
   const handleLoginSuccess = () => {
-    checkAuth();
+    checkAuth().then(() => {
+      // Refresh wishlist count after login
+      setTimeout(() => refreshWishlistCount(), 100);
+    });
   };
 
   const handleLogout = async () => {
