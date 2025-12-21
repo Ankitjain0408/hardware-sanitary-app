@@ -150,10 +150,12 @@ function App() {
       } else {
         setIsAuthenticated(false);
         setUser(null);
+        setWishlistCount(0);
       }
     } catch (error) {
       setIsAuthenticated(false);
       setUser(null);
+      setWishlistCount(0);
     } finally {
       setIsLoading(false);
     }
