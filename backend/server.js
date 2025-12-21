@@ -50,6 +50,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "";
 
 app.use(express.json());
 
+// Log all incoming requests (for debugging)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/products')) {
+    console.log(`Incoming request: ${req.method} ${req.path}, query:`, req.query, 'params:', req.params);
+  }
+  next();
+});
+
 // If deploying behind a proxy (Render/Railway/Heroku/Nginx), this is required for secure cookies
 app.set("trust proxy", 1);
 
