@@ -236,7 +236,11 @@ app.post("/api/auth/signup/send-otp", (req, res, next) => {
   console.log("📥 Request IP:", req.ip);
   next();
 }, otpLimiter, signupSendOTP);
-app.post("/api/auth/signup/verify-otp", authLimiter, signupVerifyOTP);
+app.post("/api/auth/signup/verify-otp", (req, res, next) => {
+  console.log("🎯🎯🎯 POST /api/auth/signup/verify-otp route hit 🎯🎯🎯");
+  console.log("📥 Request body:", { email: req.body?.email, otp: req.body?.otp ? "***SET***" : "NOT SET" });
+  next();
+}, authLimiter, signupVerifyOTP);
 app.post("/api/auth/signup/resend-otp", (req, res, next) => {
   console.log("🎯 POST /api/auth/signup/resend-otp route hit");
   next();

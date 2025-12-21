@@ -94,13 +94,17 @@ const OTPVerification = ({ email, onBack, onOTPVerified, verifyEndpoint = "/api/
     }
 
     try {
+      console.log(`🔐 Verifying OTP: ${otpCode} for ${email}`);
+      console.log(`🔐 Using endpoint: ${verifyEndpoint}`);
       const res = await apiFetch(verifyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp: otpCode }),
       });
 
+      console.log(`🔐 OTP verification response status: ${res.status}`);
       const data = await res.json();
+      console.log(`🔐 OTP verification response:`, data);
 
       if (res.ok && data.verified) {
         setMsg("OTP verified successfully!");

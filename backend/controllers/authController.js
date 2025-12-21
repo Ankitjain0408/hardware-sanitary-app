@@ -351,27 +351,42 @@ export const signupSendOTP = async (req, res) => {
 
 // Signup - Verify OTP and Complete Signup
 export const signupVerifyOTP = async (req, res) => {
+  console.log("🔐 signupVerifyOTP called");
+  console.log("📥 Request body:", { email: req.body?.email, otp: req.body?.otp ? "***SET***" : "NOT SET" });
   try {
     const { email, otp } = req.body;
 
     if (!email || !otp) {
+      console.log("❌ Missing email or OTP");
       return res.status(400).json({ msg: "Email and OTP are required" });
     }
 
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedOTP = otp.trim();
+    console.log(`🔐 Verifying OTP for ${trimmedEmail}, OTP length: ${trimmedOTP.length}`);
 
     // Check if signup data exists in session
-    if (!req.session.signupData || req.session.signupData.email !== trimmedEmail) {
+    if (!req.session.signupData) {
+      console.log("❌ No signup data in session");
+      return res.status(400).json({ msg: "Signup session expired. Please start over." });
+    }
+
+    if (req.session.signupData.email !== trimmedEmail) {
+      console.log(`❌ Email mismatch. Session: ${req.session.signupData.email}, Request: ${trimmedEmail}`);
       return res.status(400).json({ msg: "Signup session expired. Please start over." });
     }
 
     const sessionData = req.session.signupData;
+    console.log(`🔐 Session OTP: ${sessionData.otp}, Request OTP: ${trimmedOTP}`);
+    console.log(`🔐 OTP match: ${sessionData.otp === trimmedOTP}`);
 
     // Check if OTP matches (from session, not database)
     if (sessionData.otp !== trimmedOTP) {
+      console.log(`❌ OTP mismatch. Expected: ${sessionData.otp}, Got: ${trimmedOTP}`);
       return res.status(400).json({ msg: "Invalid OTP. Please check the code and try again." });
     }
+    
+    console.log("✅ OTP matched!");
 
     // Check if OTP is expired (strict 10-minute check)
     const now = new Date();
