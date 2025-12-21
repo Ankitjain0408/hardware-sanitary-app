@@ -314,11 +314,21 @@ export const signupSendOTP = async (req, res) => {
 
     // Send OTP via email
     try {
+      console.log(`📧 Attempting to send signup OTP to ${trimmedEmail}`);
       await sendSignupOTPEmail(trimmedEmail, otpCode);
       console.log(`✅ Signup OTP sent successfully to ${trimmedEmail}`);
     } catch (emailError) {
       console.error("❌ Failed to send signup OTP email:", emailError);
-      return res.status(500).json({ msg: "Failed to send verification email. Please try again." });
+      console.error("❌ Email error details:", {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response
+      });
+      return res.status(500).json({ 
+        msg: "Failed to send verification email. Please check your email address and try again.",
+        error: process.env.NODE_ENV === "development" ? emailError.message : undefined
+      });
     }
 
     console.log(`📤 Sending signup OTP response for ${trimmedEmail}`);

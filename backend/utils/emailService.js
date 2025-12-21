@@ -13,7 +13,7 @@ const createTransporter = () => {
     createTransporter._logged = true;
   }
   
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || "smtp.gmail.com",
     port: parseInt(process.env.EMAIL_PORT || "587"),
     secure: false, // true for 465, false for other ports
@@ -21,7 +21,15 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS, // App password for Gmail
     },
+    tls: {
+      // Do not fail on invalid certs
+      rejectUnauthorized: false
+    },
+    debug: true, // Enable debug logging
+    logger: true // Enable logging
   });
+  
+  return transporter;
 };
 
 // Send OTP email
@@ -148,12 +156,24 @@ This is an automated email. Please do not reply to this message.
       `,
     };
 
+    // Verify connection before sending
+    await transporter.verify();
+    console.log(`✅ SMTP connection verified for ${email}`);
+    
     const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Signup OTP email sent successfully to ${email}`);
     console.log(`📧 Message ID: ${info.messageId}`);
+    console.log(`📧 Response: ${info.response}`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("❌ Error sending signup OTP email:", error);
+    console.error("❌ Error details:", {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
     throw error;
   }
 };
