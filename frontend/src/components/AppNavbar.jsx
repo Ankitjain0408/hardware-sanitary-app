@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaBars, FaSearch, FaHeart, FaUserCircle, FaChevronDown, FaTimes, FaChevronRight, FaSignOutAlt } from "react-icons/fa";
 import NotificationBell from "./NotificationBell";
+import { apiFetch } from "../utils/httpClient";
 
 function AppNavbar({ onContactUsClick, onServiceSupportClick, onLoginClick, user, onLogout, onWishlistClick, wishlistCount = 0 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,8 +35,7 @@ function AppNavbar({ onContactUsClick, onServiceSupportClick, onLoginClick, user
     const t = setTimeout(async () => {
       try {
         setSuggestLoading(true);
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-        const res = await fetch(`${apiBase}/api/search?q=${encodeURIComponent(q)}`, { credentials: "include" });
+        const res = await apiFetch(`/api/search?q=${encodeURIComponent(q)}`, {});
         if (!res.ok) return;
         const data = await res.json();
         setSuggestions({

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaBox, FaCheck, FaTimes, FaClock, FaSpinner } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 const MyInquiries = ({ user }) => {
   const [inquiries, setInquiries] = useState([]);
@@ -14,10 +15,7 @@ const MyInquiries = ({ user }) => {
     try {
       setLoading(true);
       setError("");
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/inquiries/my-inquiries`, {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/inquiries/my-inquiries", {});
 
       if (!res.ok) throw new Error("Failed to fetch inquiries");
 

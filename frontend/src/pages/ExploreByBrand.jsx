@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "../utils/httpClient";
+import { apiFetch } from "../utils/httpClient";
 import { FaArrowLeft, FaBox, FaDownload } from "react-icons/fa";
 import { GridSkeleton } from "../components/Skeletons";
 
@@ -88,11 +89,9 @@ const ExploreByBrand = () => {
                     onClick={async () => {
                       try {
                         // Track download in backend
-                        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
                         try {
-                          const trackRes = await fetch(`${apiBase}/api/admin/brands/${brand._id}/catalog/download`, {
-                            method: 'GET',
-                            credentials: 'include'
+                          const trackRes = await apiFetch(`/api/admin/brands/${brand._id}/catalog/download`, {
+                            method: 'GET'
                           });
                           if (!trackRes.ok) {
                             console.warn('Catalog download tracking failed:', trackRes.status, trackRes.statusText);

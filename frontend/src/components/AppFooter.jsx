@@ -11,8 +11,7 @@ function AppFooter({ onContactUsClick, onServiceSupportClick }) {
 
   const fetchMainCategories = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await axios.get(`${apiBase}/api/main-categories?isActive=true`, {
+      const response = await axios.get("/api/main-categories?isActive=true", {
         withCredentials: true
       });
       // Limit to first 5 categories for footer

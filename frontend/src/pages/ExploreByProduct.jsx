@@ -222,11 +222,9 @@ const ExploreByProduct = () => {
                   if (selectedBrandData.catalogUrl) {
                     try {
                       // Track download in backend
-                      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
                       try {
-                        const trackRes = await fetch(`${apiBase}/api/admin/brands/${selectedBrandData._id}/catalog/download`, {
-                          method: 'GET',
-                          credentials: 'include'
+                        const trackRes = await apiFetch(`/api/admin/brands/${selectedBrandData._id}/catalog/download`, {
+                          method: 'GET'
                         });
                         if (!trackRes.ok) {
                           console.warn('Catalog download tracking failed:', trackRes.status, trackRes.statusText);

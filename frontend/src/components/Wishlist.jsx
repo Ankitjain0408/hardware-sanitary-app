@@ -109,11 +109,9 @@ const Wishlist = ({ onClose }) => {
       setError("");
       setSuccess("");
 
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/inquiries`, {
+      const res = await apiFetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           productId: item.productId,
           quantity: item.quantity
