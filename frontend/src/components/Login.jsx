@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 const Login = ({ handleSignIn, onClose, onLoginSuccess, onForgotPassword }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,10 +47,9 @@ const Login = ({ handleSignIn, onClose, onLoginSuccess, onForgotPassword }) => {
         password: form.password // Don't trim password
       };
 
-      const res = await fetch("/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(dataToSend),
       });
 
@@ -78,10 +78,9 @@ const Login = ({ handleSignIn, onClose, onLoginSuccess, onForgotPassword }) => {
   const handleGuestLogin = async () => {
     setMsg("");
     try {
-      const res = await fetch("/api/auth/guest-login", {
+      const res = await apiFetch("/api/auth/guest-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
       });
 
       if (!res.ok) {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import OTPVerification from "./OTPVerification.jsx";
+import { apiFetch } from "../utils/httpClient";
 
 const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -236,10 +237,9 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
         password: form.password // Don't trim password
       };
 
-      const res = await fetch("/api/auth/signup/send-otp", {
+      const res = await apiFetch("/api/auth/signup/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(dataToSend),
       });
 
@@ -299,10 +299,9 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
         password: form.password // Don't trim password
       };
 
-      const res = await fetch("/api/auth/signup/resend-otp", {
+      const res = await apiFetch("/api/auth/signup/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(dataToSend),
       });
 

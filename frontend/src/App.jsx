@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense, useMemo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { apiFetch } from "./utils/httpClient";
 import ContactUs from "./components/ContactUs";
 import ServiceSupport from "./components/ServiceSupport";
 import LoginPage from "./components/LoginPage";
@@ -82,7 +83,7 @@ function App() {
 
   const refreshWishlistCount = async () => {
     try {
-      const res = await fetch("/api/wishlist", { credentials: "include" });
+      const res = await apiFetch("/api/wishlist", {});
       if (!res.ok) return;
       const data = await res.json();
       const items = data.wishlist || [];
@@ -123,9 +124,7 @@ function App() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/profile", {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/auth/profile", {});
       
       if (res.ok) {
         const data = await res.json();
@@ -154,9 +153,8 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", {
+      await apiFetch("/api/auth/logout", {
         method: "POST",
-        credentials: "include",
       });
       setIsAuthenticated(false);
       setUser(null);
