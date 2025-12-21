@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FaArrowLeft, FaKey, FaRedo } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 const OTPVerification = ({ email, onBack, onOTPVerified, verifyEndpoint = "/api/auth/verify-otp", onResendOTP }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);

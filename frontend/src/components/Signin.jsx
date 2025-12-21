@@ -246,9 +246,18 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
       if (!res.ok) {
         try {
           const errorData = await res.json();
-          setMsg(errorData.msg || "Unable to send verification code. Please check your information and try again.");
+          // Handle rate limiting (429) with specific message
+          if (res.status === 429) {
+            setMsg(errorData.message || errorData.msg || "Too many requests. Please wait 1 minute before requesting a new OTP.");
+          } else {
+            setMsg(errorData.msg || "Unable to send verification code. Please check your information and try again.");
+          }
         } catch (parseError) {
-          setMsg("Unable to send verification code. Please try again.");
+          if (res.status === 429) {
+            setMsg("Too many requests. Please wait 1 minute before requesting a new OTP.");
+          } else {
+            setMsg("Unable to send verification code. Please try again.");
+          }
         }
         return;
       }
@@ -306,8 +315,21 @@ const Signin = ({ handleSignIn, onClose, onSignupSuccess }) => {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.msg || "Failed to resend OTP");
+        try {
+          const errorData = await res.json();
+          // Handle rate limiting (429) with specific message
+          if (res.status === 429) {
+            throw new Error(errorData.message || errorData.msg || "Too many requests. Please wait 1 minute before requesting a new OTP.");
+          } else {
+            throw new Error(errorData.msg || "Failed to resend OTP");
+          }
+        } catch (parseError) {
+          if (res.status === 429) {
+            throw new Error("Too many requests. Please wait 1 minute before requesting a new OTP.");
+          } else {
+            throw new Error("Failed to resend OTP. Please try again.");
+          }
+        }
       }
 
       const data = await res.json();

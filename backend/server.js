@@ -187,10 +187,15 @@ const authLimiter = rateLimit({
 // Stricter rate limiter for OTP requests (prevent abuse)
 const otpLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 1, // Only 1 request per minute per IP
+  max: 2, // Allow 2 requests per minute per IP (prevents accidental double-clicks)
   standardHeaders: true,
   legacyHeaders: false,
-  message: "Please wait before requesting a new OTP. You can request a new OTP in 1 minute.",
+  handler: (req, res) => {
+    res.status(429).json({ 
+      msg: "Too many OTP requests. Please wait 1 minute before requesting a new OTP.",
+      message: "Too many OTP requests. Please wait 1 minute before requesting a new OTP."
+    });
+  },
 });
 
 // ---------------- SIGNUP (with OTP verification) ----------------
