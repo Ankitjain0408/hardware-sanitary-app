@@ -84,6 +84,13 @@ app.use(
             return callback(null, true);
           }
           
+          // Allow Vercel preview URLs (if main domain is vercel.app)
+          const isVercelDomain = allowedOrigins.some(url => url.includes('vercel.app'));
+          if (isVercelDomain && origin.includes('vercel.app')) {
+            console.log(`CORS: Origin ${origin} allowed (Vercel preview URL)`);
+            return callback(null, true);
+          }
+          
           // Log for debugging
           console.log(`CORS: Origin ${origin} not in allowed list:`, allowedOrigins);
           console.log(`CORS: Normalized origin: ${originNormalized}`);
