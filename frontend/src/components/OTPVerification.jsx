@@ -94,10 +94,9 @@ const OTPVerification = ({ email, onBack, onOTPVerified, verifyEndpoint = "/api/
     }
 
     try {
-      const res = await fetch(verifyEndpoint, {
+      const res = await apiFetch(verifyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email, otp: otpCode }),
       });
 
