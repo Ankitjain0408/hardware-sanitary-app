@@ -21,7 +21,14 @@ export default function ProductDetails() {
       try {
         setLoading(true);
         setError("");
+        console.log("Loading product with id:", id);
+        if (!id) {
+          setError("Product ID is missing");
+          setLoading(false);
+          return;
+        }
         const res = await apiFetch(`/api/products/${id}`, {});
+        console.log("Product API response status:", res.status);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           console.error("Product load error:", res.status, data);
