@@ -108,12 +108,60 @@ This is an automated email. Please do not reply to this message.
 export const sendSignupOTPEmail = async (email, otp) => {
   console.log(`📧 sendSignupOTPEmail called for ${email} with OTP: ${otp}`);
   try {
+    // Try Resend first (recommended for Render - works on free tier)
+    if (process.env.RESEND_API_KEY) {
+      console.log(`✅ Using Resend for email sending`);
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const { data, error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "Hardware Sanitary App <onboarding@resend.dev>",
+        to: email,
+        subject: "Email Verification OTP - Hardware Sanitary App",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+            <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #333; margin-bottom: 20px;">Welcome! Verify Your Email</h2>
+              <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                Thank you for signing up! Please verify your email address by entering the OTP code below:
+              </p>
+              <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0;">
+                <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Your Verification Code:</p>
+                <h1 style="color: #4CAF50; font-size: 36px; letter-spacing: 8px; margin: 0; font-weight: bold;">${otp}</h1>
+              </div>
+              <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                <strong>Important:</strong>
+              </p>
+              <ul style="color: #666; font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                <li>This OTP is valid for <strong>10 minutes</strong> only</li>
+                <li>Do not share this OTP with anyone</li>
+                <li>If you did not sign up for this account, please ignore this email</li>
+              </ul>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+              <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+                This is an automated email. Please do not reply to this message.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+
+      if (error) {
+        console.error("❌ Resend error:", error);
+        throw new Error(error.message || "Failed to send email via Resend");
+      }
+
+      console.log(`✅ Signup OTP email sent successfully via Resend to ${email}`);
+      console.log(`📧 Resend email ID: ${data?.id}`);
+      return { success: true, messageId: data?.id };
+    }
+    
+    // Fallback to SMTP (Gmail) - may timeout on Render free tier
     // Check if email credentials are configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error("❌ Email credentials not configured. EMAIL_USER:", !!process.env.EMAIL_USER, "EMAIL_PASS:", !!process.env.EMAIL_PASS);
-      throw new Error("Email service not configured");
+      throw new Error("Email service not configured. Please set RESEND_API_KEY or EMAIL_USER/EMAIL_PASS");
     }
-    console.log(`✅ Email credentials found. Using: ${process.env.EMAIL_USER}`);
+    console.log(`✅ Using SMTP (Gmail) for email sending. Using: ${process.env.EMAIL_USER}`);
 
     const transporter = createTransporter();
     console.log(`📦 Transporter created for ${email}`);
