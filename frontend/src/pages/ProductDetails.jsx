@@ -24,7 +24,14 @@ export default function ProductDetails() {
         const res = await apiFetch(`/api/products/${id}`, {});
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          setError(data.msg || "Failed to load product");
+          console.error("Product load error:", res.status, data);
+          if (res.status === 401) {
+            setError("Please login or continue as guest to view products");
+          } else if (res.status === 404) {
+            setError("Product not found");
+          } else {
+            setError(data.msg || `Failed to load product (${res.status})`);
+          }
           setProduct(null);
           return;
         }
@@ -34,8 +41,9 @@ export default function ProductDetails() {
         setWishlistQty(0);
         setMainImageError(false);
         setThumbErrors({});
-      } catch {
-        setError("Failed to load product");
+      } catch (error) {
+        console.error("Product load error:", error);
+        setError("Failed to load product. Please check your connection.");
         setProduct(null);
       } finally {
         setLoading(false);
