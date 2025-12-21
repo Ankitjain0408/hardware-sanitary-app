@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 const ResetPassword = ({ email, onBack, onPasswordReset }) => {
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
@@ -71,10 +72,9 @@ const ResetPassword = ({ email, onBack, onPasswordReset }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await apiFetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           email,
           newPassword: form.newPassword

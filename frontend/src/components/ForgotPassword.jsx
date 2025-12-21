@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaArrowLeft, FaEnvelope } from "react-icons/fa";
+import { apiFetch } from "../utils/httpClient";
 
 const ForgotPassword = ({ onBack, onOTPSent }) => {
   const [email, setEmail] = useState("");
@@ -34,10 +35,9 @@ const ForgotPassword = ({ onBack, onOTPSent }) => {
     }
 
     try {
-      const res = await fetch("/api/auth/forgot-password", {
+      const res = await apiFetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email: trimmedEmail }),
       });
 

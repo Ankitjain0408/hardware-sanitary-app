@@ -34,14 +34,15 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       // Fetch brands count
-      const brandsRes = await fetch("/api/admin/brands", { credentials: "include" });
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+      const brandsRes = await fetch(`${apiBase}/api/admin/brands`, { credentials: "include" });
       if (brandsRes.ok) {
         const brandsData = await brandsRes.json();
         setStats(prev => ({ ...prev, brands: brandsData.brands?.length || 0 }));
       }
 
       // Fetch products count
-      const productsRes = await fetch("/api/admin/products", { credentials: "include" });
+      const productsRes = await fetch(`${apiBase}/api/admin/products`, { credentials: "include" });
       if (productsRes.ok) {
         const productsData = await productsRes.json();
         setStats(prev => ({ ...prev, products: productsData.products?.length || 0 }));

@@ -21,7 +21,7 @@ export default function ProductDetails() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch(`/api/products/${id}`, { credentials: "include" });
+        const res = await apiFetch(`/api/products/${id}`, {});
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           setError(data.msg || "Failed to load product");

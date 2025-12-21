@@ -34,7 +34,8 @@ function AppNavbar({ onContactUsClick, onServiceSupportClick, onLoginClick, user
     const t = setTimeout(async () => {
       try {
         setSuggestLoading(true);
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { credentials: "include" });
+        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+        const res = await fetch(`${apiBase}/api/search?q=${encodeURIComponent(q)}`, { credentials: "include" });
         if (!res.ok) return;
         const data = await res.json();
         setSuggestions({
