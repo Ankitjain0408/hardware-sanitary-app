@@ -58,10 +58,16 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        console.log('CORS: No origin, allowing request');
+        return callback(null, true);
+      }
+
+      console.log(`CORS: Checking origin: ${origin}, IS_PROD: ${IS_PROD}, FRONTEND_URL: ${FRONTEND_URL || 'NOT SET'}`);
 
       // Dev: allow localhost on any port (for Vite dev server)
       if (!IS_PROD && (/^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin))) {
+        console.log('CORS: Development origin allowed');
         return callback(null, true);
       }
 
@@ -74,11 +80,13 @@ app.use(
           
           // Check exact match or normalized match
           if (allowedOrigins.includes(origin) || allowedOrigins.includes(originNormalized)) {
+            console.log(`CORS: Origin ${origin} allowed`);
             return callback(null, true);
           }
           
-          // Log for debugging (remove in production if needed)
+          // Log for debugging
           console.log(`CORS: Origin ${origin} not in allowed list:`, allowedOrigins);
+          console.log(`CORS: Normalized origin: ${originNormalized}`);
         } else {
           // If FRONTEND_URL not set, allow all origins (for initial deployment)
           // Set FRONTEND_URL in environment variables for better security
@@ -87,6 +95,7 @@ app.use(
         }
       }
 
+      console.log(`CORS: Blocking origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
