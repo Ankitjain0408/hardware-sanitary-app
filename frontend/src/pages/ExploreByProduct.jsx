@@ -4,6 +4,7 @@ import axios from "axios";
 import { FaArrowLeft, FaShoppingBag, FaHeart, FaSearch, FaDownload } from "react-icons/fa";
 import { GridSkeleton } from "../components/Skeletons";
 import { enhanceImageUrl } from "../utils/imageUtils";
+import { apiFetch } from "../utils/httpClient";
 
 const ExploreByProduct = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,7 +44,7 @@ const ExploreByProduct = () => {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch("/api/wishlist", { credentials: "include" });
+      const res = await apiFetch("/api/wishlist", {});
       if (!res.ok) return;
       const data = await res.json();
       const items = data.wishlist || [];
@@ -125,10 +126,9 @@ const ExploreByProduct = () => {
   const addToWishlist = async (product) => {
     setAddingToWishlist({ ...addingToWishlist, [product._id]: true });
     try {
-      const response = await fetch("/api/wishlist", {
+      const response = await apiFetch("/api/wishlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           productId: product._id,
           name: product.name,
@@ -168,9 +168,8 @@ const ExploreByProduct = () => {
     setAddingToWishlist((prev) => ({ ...prev, [pid]: true }));
     try {
       if (nextQty <= 0) {
-        const res = await fetch(`/api/wishlist/${pid}`, {
+        const res = await apiFetch(`/api/wishlist/${pid}`, {
           method: "DELETE",
-          credentials: "include",
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -186,10 +185,9 @@ const ExploreByProduct = () => {
         return;
       }
 
-      const res = await fetch(`/api/wishlist/${pid}`, {
+      const res = await apiFetch(`/api/wishlist/${pid}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ quantity: nextQty }),
       });
       if (!res.ok) {

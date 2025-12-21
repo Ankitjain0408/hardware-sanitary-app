@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaTimes, FaHeart, FaPlus, FaMinus, FaTrash, FaShoppingCart } from "react-icons/fa";
 import { enhanceImageUrl } from "../utils/imageUtils";
+import { apiFetch } from "../utils/httpClient";
 
 const Wishlist = ({ onClose }) => {
   const [wishlist, setWishlist] = useState([]);
@@ -22,9 +23,7 @@ const Wishlist = ({ onClose }) => {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch("/api/wishlist", {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/wishlist", {});
 
       if (res.ok) {
         const data = await res.json();
@@ -45,7 +44,7 @@ const Wishlist = ({ onClose }) => {
     if (newQuantity < 1) return;
 
     try {
-      const res = await fetch(`/api/wishlist/${productId}`, {
+      const res = await apiFetch(`/api/wishlist/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -68,9 +67,8 @@ const Wishlist = ({ onClose }) => {
 
   const removeItem = async (productId) => {
     try {
-      const res = await fetch(`/api/wishlist/${productId}`, {
+      const res = await apiFetch(`/api/wishlist/${productId}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       if (res.ok) {

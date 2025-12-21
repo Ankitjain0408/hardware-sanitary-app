@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaArrowLeft, FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { enhanceImageUrl } from "../utils/imageUtils";
+import { apiFetch } from "../utils/httpClient";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -45,7 +46,7 @@ export default function ProductDetails() {
 
   const fetchWishlistQty = async () => {
     try {
-      const res = await fetch("/api/wishlist", { credentials: "include" });
+      const res = await apiFetch("/api/wishlist", {});
       if (!res.ok) return;
       const data = await res.json();
       const items = data.wishlist || [];
@@ -82,10 +83,9 @@ export default function ProductDetails() {
     if (!product) return;
     setAdding(true);
     try {
-      const res = await fetch("/api/wishlist", {
+      const res = await apiFetch("/api/wishlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           productId: product._id,
           name: product.name + (selectedVariant 
@@ -127,9 +127,8 @@ export default function ProductDetails() {
     setAdding(true);
     try {
       if (nextQty <= 0) {
-        const res = await fetch(`/api/wishlist/${product._id}`, {
+        const res = await apiFetch(`/api/wishlist/${product._id}`, {
           method: "DELETE",
-          credentials: "include",
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -141,10 +140,9 @@ export default function ProductDetails() {
         return;
       }
 
-      const res = await fetch(`/api/wishlist/${product._id}`, {
+      const res = await apiFetch(`/api/wishlist/${product._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ quantity: nextQty }),
       });
       if (!res.ok) {
