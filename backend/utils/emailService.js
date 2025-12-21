@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
-import { Resend } from "resend";
 
 // Create reusable transporter object using SMTP transport
 // Always create fresh transporter to ensure latest env vars are used
