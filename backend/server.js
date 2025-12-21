@@ -596,7 +596,10 @@ app.get("/api/main-categories", requireAuth, getAllMainCategories); // New: top-
 app.get("/api/sub-categories", requireAuth, getSubCategoriesByMainCategory); // New: subcategories by main category
 app.get("/api/categories", requireAuth, getCategoriesByBrand); // Legacy: brand-specific categories
 app.get("/api/products", requireAuth, getAllProducts);
-app.get("/api/products/:id", requireAuth, getProductById);
+app.get("/api/products/:id", requireAuth, (req, res, next) => {
+  console.log(`Route matched: GET /api/products/:id, id: ${req.params.id}, user: ${req.user?._id || 'none'}`);
+  next();
+}, getProductById);
 app.get("/api/search", requireAuth, searchAll);
 app.use("/api/reviews", requireAuth, reviewRoutes);
 app.use("/api/inquiries", inquiryRoutes);
