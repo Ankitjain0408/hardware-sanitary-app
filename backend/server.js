@@ -69,13 +69,20 @@ app.use(
       if (IS_PROD) {
         if (FRONTEND_URL) {
           // Support comma-separated multiple origins
-          const allowedOrigins = FRONTEND_URL.split(',').map(url => url.trim());
-          if (allowedOrigins.includes(origin)) {
+          const allowedOrigins = FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, '')); // Remove trailing slashes
+          const originNormalized = origin.replace(/\/$/, ''); // Remove trailing slash from request origin
+          
+          // Check exact match or normalized match
+          if (allowedOrigins.includes(origin) || allowedOrigins.includes(originNormalized)) {
             return callback(null, true);
           }
+          
+          // Log for debugging (remove in production if needed)
+          console.log(`CORS: Origin ${origin} not in allowed list:`, allowedOrigins);
         } else {
           // If FRONTEND_URL not set, allow all origins (for initial deployment)
           // Set FRONTEND_URL in environment variables for better security
+          console.log('CORS: FRONTEND_URL not set, allowing all origins');
           return callback(null, true);
         }
       }
