@@ -54,6 +54,14 @@ app.use(express.json());
 app.use("/api/auth", (req, res, next) => {
   if (req.method === "POST") {
     console.log(`🔵 POST ${req.path} - Body keys:`, Object.keys(req.body || {}));
+    if (req.path.includes("signup")) {
+      console.log(`🔵 SIGNUP REQUEST: ${req.method} ${req.path}`);
+      console.log(`🔵 Signup body:`, { 
+        username: req.body?.username, 
+        email: req.body?.email, 
+        hasPassword: !!req.body?.password 
+      });
+    }
   }
   next();
 });

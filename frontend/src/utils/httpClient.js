@@ -32,6 +32,8 @@ axios.interceptors.response.use(
 // Helper function for fetch requests with API base URL
 export const apiFetch = (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
+  console.log(`🌐 apiFetch: ${options.method || 'GET'} ${url}`);
+  console.log(`🌐 API_BASE_URL:`, API_BASE_URL);
   return fetch(url, {
     credentials: 'include',
     ...options,
