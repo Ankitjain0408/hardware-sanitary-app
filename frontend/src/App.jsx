@@ -147,6 +147,8 @@ function App() {
           isAdmin: data.user.isAdmin || false,
           isGuest: data.user.isGuest || false
         });
+        // Fetch wishlist count after authentication is confirmed
+        setTimeout(() => refreshWishlistCount(), 100);
       } else {
         setIsAuthenticated(false);
         setUser(null);
