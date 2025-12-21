@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaSearch, FaCheck, FaTimes, FaClock, FaBox, FaEdit } from "react-icons/fa";
+import { apiFetch } from "../../utils/httpClient";
 
 const InquiryManagementPage = () => {
   const [inquiries, setInquiries] = useState([]);

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaBell, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
+import { apiFetch } from "../../utils/httpClient";
 
 const AdminNotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -43,10 +44,7 @@ const AdminNotificationBell = () => {
 
   const fetchNotificationCount = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/admin/notifications/count`, {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/admin/notifications/count", {});
       if (res.ok) {
         const data = await res.json();
         setUnreadCount(data.count || 0);
@@ -59,10 +57,7 @@ const AdminNotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/admin/notifications`, {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/admin/notifications", {});
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications || []);
@@ -76,10 +71,8 @@ const AdminNotificationBell = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/admin/notifications/${notificationId}/read`, {
+      const res = await apiFetch(`/api/admin/notifications/${notificationId}/read`, {
         method: "PUT",
-        credentials: "include",
       });
       if (res.ok) {
         await fetchNotificationCount();
@@ -92,10 +85,8 @@ const AdminNotificationBell = () => {
 
   const markAllAsRead = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/admin/notifications/read-all`, {
+      const res = await apiFetch("/api/admin/notifications/read-all", {
         method: "PUT",
-        credentials: "include",
       });
       if (res.ok) {
         await fetchNotificationCount();

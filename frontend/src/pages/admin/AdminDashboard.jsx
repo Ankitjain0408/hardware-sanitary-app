@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiFetch } from "../../utils/httpClient";
 import { 
   FaBox, 
   FaShoppingBag, 
@@ -34,23 +35,21 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       // Fetch brands count
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const brandsRes = await fetch(`${apiBase}/api/admin/brands`, { credentials: "include" });
+      const brandsRes = await apiFetch("/api/admin/brands", {});
       if (brandsRes.ok) {
         const brandsData = await brandsRes.json();
         setStats(prev => ({ ...prev, brands: brandsData.brands?.length || 0 }));
       }
 
       // Fetch products count
-      const productsRes = await fetch(`${apiBase}/api/admin/products`, { credentials: "include" });
+      const productsRes = await apiFetch("/api/admin/products", {});
       if (productsRes.ok) {
         const productsData = await productsRes.json();
         setStats(prev => ({ ...prev, products: productsData.products?.length || 0 }));
       }
 
       // Fetch inquiries count
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const inquiriesRes = await fetch(`${apiBase}/api/inquiries`, { credentials: "include" });
+      const inquiriesRes = await apiFetch("/api/inquiries", {});
       if (inquiriesRes.ok) {
         const inquiriesData = await inquiriesRes.json();
         const inquiriesList = inquiriesData.inquiries || [];
@@ -68,8 +67,7 @@ const AdminDashboard = () => {
   const fetchRecentInquiries = async () => {
     try {
       setLoading(true);
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/inquiries`, { credentials: "include" });
+      const res = await apiFetch("/api/inquiries", {});
       if (res.ok) {
         const data = await res.json();
         const allInquiries = data.inquiries || [];
