@@ -23,14 +23,11 @@ const InquiryManagementPage = () => {
   const fetchInquiries = async () => {
     try {
       setLoading(true);
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
       const url = statusFilter === "all" 
-        ? `${apiBase}/api/inquiries` 
-        : `${apiBase}/api/inquiries?status=${statusFilter}`;
+        ? "/api/inquiries" 
+        : `/api/inquiries?status=${statusFilter}`;
       
-      const res = await fetch(url, {
-        credentials: "include",
-      });
+      const res = await apiFetch(url, {});
 
       if (!res.ok) throw new Error("Failed to fetch inquiries");
 
@@ -52,11 +49,9 @@ const InquiryManagementPage = () => {
       setUpdating(true);
       setError("");
 
-      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await fetch(`${apiBase}/api/inquiries/${selectedInquiry._id}/status`, {
+      const res = await apiFetch(`/api/inquiries/${selectedInquiry._id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           status: updateForm.status,
           adminNotes: updateForm.adminNotes,
