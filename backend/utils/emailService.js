@@ -111,6 +111,7 @@ export const sendSignupOTPEmail = async (email, otp) => {
     console.log(`✅ Email credentials found. Using: ${process.env.EMAIL_USER}`);
 
     const transporter = createTransporter();
+    console.log(`📦 Transporter created for ${email}`);
 
     const mailOptions = {
       from: `"Hardware Sanitary App" <${process.env.EMAIL_USER}>`,
