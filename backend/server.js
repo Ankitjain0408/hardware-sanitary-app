@@ -105,7 +105,7 @@ app.use(
         return callback(null, true);
       }
 
-      // Prod: allow configured frontend domain(s) or all if not set
+      // Prod: use FRONTEND_URL exactly as configured
       if (IS_PROD) {
         if (FRONTEND_URL && FRONTEND_URL.trim()) {
           // Support comma-separated multiple origins
@@ -124,20 +124,23 @@ app.use(
             console.log(`CORS: Origin ${origin} allowed (Vercel preview URL)`);
             return callback(null, true);
           }
-          
+
           // Log for debugging
           console.log(`CORS: Origin ${origin} not in allowed list:`, allowedOrigins);
           console.log(`CORS: Normalized origin: ${originNormalized}`);
+          console.log(`CORS: Blocking origin: ${origin}`);
+          callback(new Error("Not allowed by CORS"));
         } else {
           // If FRONTEND_URL not set, allow all origins (for initial deployment)
           // Set FRONTEND_URL in environment variables for better security
           console.log(`CORS: FRONTEND_URL not set or empty, allowing all origins. Origin: ${origin}`);
           return callback(null, true);
         }
+      } else {
+        // Non-prod, non-localhost - block
+        console.log(`CORS: Blocking origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
       }
-
-      console.log(`CORS: Blocking origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
