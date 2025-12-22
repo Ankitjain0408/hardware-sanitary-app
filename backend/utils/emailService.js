@@ -38,9 +38,15 @@ export const sendOTPEmail = async (email, otp) => {
 
     console.log(`✅ Using Resend for email sending`);
     const resend = getResendClient();
+    const fromEmail = getFromEmail();
+    
+    console.log(`📧 Resend email details:`);
+    console.log(`   From: ${fromEmail}`);
+    console.log(`   To: ${email}`);
+    console.log(`   RESEND_FROM_EMAIL env: ${process.env.RESEND_FROM_EMAIL || 'NOT SET (using default)'}`);
 
     const { data, error } = await resend.emails.send({
-      from: getFromEmail(),
+      from: fromEmail,
       to: email,
       subject: "Password Reset OTP - Hardware Sanitary App",
       html: `
@@ -96,9 +102,15 @@ export const sendSignupOTPEmail = async (email, otp) => {
 
     console.log(`✅ Using Resend for email sending`);
     const resend = getResendClient();
+    const fromEmail = getFromEmail();
+    
+    console.log(`📧 Resend email details:`);
+    console.log(`   From: ${fromEmail}`);
+    console.log(`   To: ${email}`);
+    console.log(`   RESEND_FROM_EMAIL env: ${process.env.RESEND_FROM_EMAIL || 'NOT SET (using default)'}`);
 
     const { data, error } = await resend.emails.send({
-      from: getFromEmail(),
+      from: fromEmail,
       to: email,
       subject: "Email Verification OTP - Hardware Sanitary App",
       html: `
