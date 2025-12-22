@@ -122,5 +122,6 @@ See the `docs/` folder for detailed documentation:
 - `EMAIL_SETUP.md` - Email service setup
 
 ## License
+.
 
 ISC
