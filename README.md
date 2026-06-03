@@ -1,4 +1,4 @@
-# SHRI KRISHNA Hardware & Sanitary
+# SHRI KRISHNA Hardware & Sanitary (https://hardware-sanitary-app.vercel.app/)
 
 A full-stack e-commerce application for hardware and sanitary products.
 
