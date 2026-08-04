@@ -11,6 +11,19 @@ const OTPSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  type: {
+    type: String,
+    enum: ['signup', 'password_reset'],
+    default: 'password_reset'
+  },
+  signupData: {
+    username: { type: String },
+    hashedPassword: { type: String }
+  },
+  resetToken: {
+    type: String,
+    default: null
+  },
   expiresAt: {
     type: Date,
     required: true,
@@ -25,7 +38,8 @@ const OTPSchema = new mongoose.Schema({
 });
 
 // Index for faster lookups
-OTPSchema.index({ email: 1, expiresAt: 1 });
+OTPSchema.index({ email: 1, type: 1, expiresAt: 1 });
+OTPSchema.index({ resetToken: 1 });
 // Note: TTL index removed to prevent premature deletion - we handle expiration manually
 
 const OTP = mongoose.model("OTP", OTPSchema);

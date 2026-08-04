@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import OTP from "../models/OTP.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { sendOTPEmail, sendSignupOTPEmail } from "../utils/emailService.js";
 
 // Generate random 6-digit OTP
@@ -42,14 +43,15 @@ export const requestPasswordReset = async (req, res) => {
     // Generate OTP
     const otpCode = generateOTP();
 
-    // Delete any existing unused OTPs for this email (invalidate old OTPs)
-    await OTP.deleteMany({ email: trimmedEmail, isUsed: false });
+    // Delete any existing unused password reset OTPs for this email
+    await OTP.deleteMany({ email: trimmedEmail, type: "password_reset", isUsed: false });
 
-    // Save new OTP with 10-minute expiration
+    // Save new OTP with 10-minute expiration in MongoDB
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Exactly 10 minutes from now
     const otp = new OTP({
       email: trimmedEmail,
       otp: otpCode,
+      type: "password_reset",
       expiresAt: expiresAt
     });
     await otp.save();
@@ -83,13 +85,14 @@ export const verifyOTP = async (req, res) => {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedOTP = otp.trim();
 
-    // Find valid OTP (must be unused and not expired - strict 10-minute check)
+    // Find valid OTP in DB (must be unused and not expired - strict 10-minute check)
     const now = new Date();
     const otpRecord = await OTP.findOne({
       email: trimmedEmail,
       otp: trimmedOTP,
+      type: "password_reset",
       isUsed: false,
-      expiresAt: { $gt: now } // Must not be expired (strict check)
+      expiresAt: { $gt: now }
     });
 
     if (!otpRecord) {
@@ -97,6 +100,7 @@ export const verifyOTP = async (req, res) => {
       const expiredOTP = await OTP.findOne({
         email: trimmedEmail,
         otp: trimmedOTP,
+        type: "password_reset",
         isUsed: false
       });
       
@@ -107,18 +111,23 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ msg: "Invalid OTP. Please check the code and try again." });
     }
 
-    // Mark OTP as used
+    // Generate a secure reset token stored in DB for authorization
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Mark OTP as used and save resetToken in DB
     otpRecord.isUsed = true;
+    otpRecord.resetToken = resetToken;
     await otpRecord.save();
 
-    // Generate a temporary token for password reset (store in session or return)
-    // For simplicity, we'll use a session-based approach
+    // Secondary session fallback for single-origin dev environments
     req.session.resetPasswordEmail = trimmedEmail;
     req.session.resetPasswordOTPVerified = true;
+    req.session.resetToken = resetToken;
 
     res.json({ 
       msg: "OTP verified successfully",
-      verified: true
+      verified: true,
+      resetToken
     });
   } catch (error) {
     console.error("Verify OTP error:", error);
@@ -129,7 +138,7 @@ export const verifyOTP = async (req, res) => {
 // Reset Password
 export const resetPassword = async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, newPassword, resetToken } = req.body;
 
     if (!email || !newPassword) {
       return res.status(400).json({ msg: "Email and new password are required" });
@@ -137,10 +146,26 @@ export const resetPassword = async (req, res) => {
 
     const trimmedEmail = email.trim().toLowerCase();
 
-    // Check if OTP was verified (session check)
-    if (!req.session.resetPasswordEmail || 
-        req.session.resetPasswordEmail !== trimmedEmail ||
-        !req.session.resetPasswordOTPVerified) {
+    // Check authorization: Check DB for verified resetToken OR check session fallback
+    let isAuthorized = false;
+
+    if (resetToken) {
+      const validOTPRecord = await OTP.findOne({
+        email: trimmedEmail,
+        resetToken: resetToken,
+        type: "password_reset",
+        isUsed: true
+      });
+      if (validOTPRecord) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized && req.session.resetPasswordEmail === trimmedEmail && req.session.resetPasswordOTPVerified) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
       return res.status(400).json({ msg: "OTP verification required. Please verify OTP first." });
     }
 
@@ -195,11 +220,12 @@ export const resetPassword = async (req, res) => {
     // Clear reset session
     delete req.session.resetPasswordEmail;
     delete req.session.resetPasswordOTPVerified;
+    delete req.session.resetToken;
 
-    // Invalidate all existing OTPs for this email
+    // Invalidate all existing OTPs and reset tokens for this email
     await OTP.updateMany(
       { email: trimmedEmail },
-      { isUsed: true }
+      { isUsed: true, resetToken: null }
     );
 
     res.json({ msg: "Password reset successfully. Please login with your new password." });
@@ -308,15 +334,34 @@ export const signupSendOTP = async (req, res) => {
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     console.log(`⏰ OTP expires at: ${otpExpiresAt.toISOString()}`);
 
-    // Store signup data and OTP in session (not in database)
+    // Hash password upfront for secure DB storage
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Delete any existing unused signup OTPs for this email in MongoDB
+    await OTP.deleteMany({ email: trimmedEmail, type: "signup", isUsed: false });
+
+    // Store signup data and OTP in MongoDB
+    const otpRecord = new OTP({
+      email: trimmedEmail,
+      otp: otpCode,
+      type: "signup",
+      signupData: {
+        username: trimmedUsername,
+        hashedPassword: hashedPassword
+      },
+      expiresAt: otpExpiresAt
+    });
+    await otpRecord.save();
+    console.log(`💾 Stored signup data and OTP in MongoDB for ${trimmedEmail}`);
+
+    // Store signup data in session as secondary fallback
     req.session.signupData = {
       username: trimmedUsername,
       email: trimmedEmail,
-      password: password, // Will be hashed later
+      password: password,
       otp: otpCode,
-      otpExpiresAt: otpExpiresAt // Exactly 10 minutes from now
+      otpExpiresAt: otpExpiresAt
     };
-    console.log(`💾 Stored signup data in session for ${trimmedEmail}`);
 
     // Send OTP via email
     try {
@@ -365,49 +410,80 @@ export const signupVerifyOTP = async (req, res) => {
     const trimmedOTP = otp.trim();
     console.log(`🔐 Verifying OTP for ${trimmedEmail}, OTP length: ${trimmedOTP.length}`);
 
-    // Check if signup data exists in session
-    if (!req.session.signupData) {
-      console.log("❌ No signup data in session");
-      return res.status(400).json({ msg: "Signup session expired. Please start over." });
-    }
-
-    if (req.session.signupData.email !== trimmedEmail) {
-      console.log(`❌ Email mismatch. Session: ${req.session.signupData.email}, Request: ${trimmedEmail}`);
-      return res.status(400).json({ msg: "Signup session expired. Please start over." });
-    }
-
-    const sessionData = req.session.signupData;
-    console.log(`🔐 Session OTP: ${sessionData.otp}, Request OTP: ${trimmedOTP}`);
-    console.log(`🔐 OTP match: ${sessionData.otp === trimmedOTP}`);
-
-    // Check if OTP matches (from session, not database)
-    if (sessionData.otp !== trimmedOTP) {
-      console.log(`❌ OTP mismatch. Expected: ${sessionData.otp}, Got: ${trimmedOTP}`);
-      return res.status(400).json({ msg: "Invalid OTP. Please check the code and try again." });
-    }
-    
-    console.log("✅ OTP matched!");
-
-    // Check if OTP is expired (strict 10-minute check)
     const now = new Date();
-    const expiresAt = new Date(sessionData.otpExpiresAt);
-    console.log(`⏰ OTP expires at: ${expiresAt.toISOString()}, Current time: ${now.toISOString()}`);
-    
-    if (expiresAt <= now) {
-      console.log("❌ OTP expired");
-      return res.status(400).json({ 
-        msg: "This OTP has expired. Please request a new one.",
-        expired: true 
+    let username = null;
+    let hashedPassword = null;
+    let matchedInDB = false;
+
+    // 1. Primary Check: Query MongoDB for active signup OTP
+    const otpRecord = await OTP.findOne({
+      email: trimmedEmail,
+      otp: trimmedOTP,
+      type: "signup",
+      isUsed: false,
+      expiresAt: { $gt: now }
+    });
+
+    if (otpRecord && otpRecord.signupData) {
+      console.log("✅ Matched signup OTP in MongoDB");
+      username = otpRecord.signupData.username;
+      hashedPassword = otpRecord.signupData.hashedPassword;
+      matchedInDB = true;
+
+      // Mark OTP as used
+      otpRecord.isUsed = true;
+      await otpRecord.save();
+    } else {
+      // Check if expired in DB for a specific error message
+      const expiredRecord = await OTP.findOne({
+        email: trimmedEmail,
+        otp: trimmedOTP,
+        type: "signup",
+        isUsed: false
       });
+
+      if (expiredRecord && expiredRecord.expiresAt <= now) {
+        console.log("❌ Signup OTP expired in DB");
+        return res.status(400).json({
+          msg: "This OTP has expired. Please request a new one.",
+          expired: true
+        });
+      }
+
+      // 2. Secondary Fallback Check: Express Session
+      if (req.session.signupData && 
+          req.session.signupData.email === trimmedEmail && 
+          req.session.signupData.otp === trimmedOTP) {
+        
+        const sessionExpiresAt = new Date(req.session.signupData.otpExpiresAt);
+        if (sessionExpiresAt <= now) {
+          return res.status(400).json({
+            msg: "This OTP has expired. Please request a new one.",
+            expired: true
+          });
+        }
+
+        console.log("✅ Matched signup OTP in Session fallback");
+        username = req.session.signupData.username;
+        hashedPassword = await bcrypt.hash(req.session.signupData.password, 10);
+      }
     }
-    
-    console.log("✅ OTP not expired");
 
-    // Get signup data from session (remove OTP from data)
-    const { username, password } = sessionData;
+    if (!username || !hashedPassword) {
+      console.log("❌ Invalid or expired OTP verification attempt");
+      return res.status(400).json({ msg: "Invalid or expired OTP. Please check the code and try again." });
+    }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Double check if username or email was registered while OTP was pending
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({ msg: "Username is already taken" });
+    }
+
+    const existingEmail = await User.findOne({ email: trimmedEmail });
+    if (existingEmail) {
+      return res.status(400).json({ msg: "Email is already registered" });
+    }
 
     // Create user with email verified
     const user = new User({ 
@@ -418,7 +494,7 @@ export const signupVerifyOTP = async (req, res) => {
     });
     await user.save();
 
-    // Clear signup session
+    // Clear session signup data if present
     delete req.session.signupData;
 
     // Set user session
